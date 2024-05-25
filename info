@@ -1,0 +1,514 @@
+cls
+# Cambiar la página de códigos a UTF-8
+chcp 65001 > $null
+
+# Configurar la consola para usar UTF-8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$distancia = 30
+
+Write-Host "Obteniendo información del sistema..."
+
+$sl = "C:\Windows\System32\slmgr.vbs"
+$caducidadlicencia = cscript //nologo $sl /xpr
+
+# Obtener el estado de activación de Windows
+#$activationStatus = Get-CimInstance -ClassName SoftwareLicensingProduct | Where-Object {
+#    $_.PartialProductKey -and $_.LicenseStatus -eq 1
+#}
+
+$bios = Get-CimInstance -ClassName Win32_BIOS
+
+# Función para Obtener la Versión de TPM
+function Get-TPMVersion {
+    try {
+        $tpm = Get-WmiObject -Namespace "Root\CIMv2\Security\MicrosoftTpm" -Class Win32_Tpm
+        if ($tpm) {
+            $versions = $tpm | Select-Object -ExpandProperty SpecVersion
+            $highestVersion = ($versions | Sort-Object -Descending)[0]
+            return $highestVersion
+        } else {
+            return "TPM no disponible"
+        }
+    } catch {
+        return "Error al obtener la versión de TPM"
+    }
+}
+
+# Función para Comprobar si Secure Boot está Habilitado
+function Get-SecureBootStatus {
+    try {
+        $secureBoot = Get-CimInstance -ClassName Win32_FirmwareEnvironmentVariable -Namespace root\wmi -Filter "Name='SecureBoot'"
+        if ($secureBoot.Value -eq 1) {
+            return "Habilitado"
+        } else {
+            return "Deshabilitado"
+        }
+    } catch {
+        return "Error al obtener el estado de Secure Boot"
+    }
+}
+
+# Función para Obtener el Modo de Arranque (UEFI o Legacy)
+function Get-BootMode {
+    try {
+        $firmware = Get-WmiObject -Class Win32_BIOS
+        if ($firmware.BiosCharacteristics -contains 15) {
+            return "UEFI"
+        } else {
+            return "Legacy"
+        }
+    } catch {
+        return "Error al obtener el modo de arranque"
+    }
+}
+
+# Información del sistema operativo
+function Get-OSInfo {
+    $os = Get-WmiObject -Class Win32_OperatingSystem
+    return @{
+        "Caption" = $os.Caption
+        "Version" = $os.Version
+        "BuildNumber" = $os.BuildNumber
+        "OSArchitecture" = $os.OSArchitecture
+    }
+}
+
+
+# Función para Comprobar si BitLocker está Activado y Obtener la Clave de Desencriptación
+function Get-BitLockerStatus {
+    try {
+        $bitLockerStatus = Get-BitLockerVolume -MountPoint "C:"
+        if ($bitLockerStatus.ProtectionStatus -eq "On") {
+            $recoveryKey = $bitLockerStatus.KeyProtector | Where-Object { $_.KeyProtectorType -eq "RecoveryPassword" } | Select-Object -ExpandProperty RecoveryPassword
+            if ($recoveryKey) {
+                return @{
+                    "Estado" = "Activado"
+                    "Clave de Recuperación" = $recoveryKey
+                }
+            } else {
+                return @{
+                    "Estado" = "Activado"
+                    "Clave de Recuperación" = "No disponible"
+                }
+            }
+        } else {
+            return @{
+                "Estado" = "Desactivado"
+                "Clave de Recuperación" = "N/A"
+            }
+        }
+    } catch {
+        return @{
+            "Estado" = "Error al obtener el estado de BitLocker"
+            "Clave de Recuperación" = "N/A"
+        }
+    }
+}
+
+function InfoLightRed {
+    param(
+        [string]$parametro1,
+        [string]$parametro2
+    )
+
+    # Calcular la cantidad de espacios necesarios para que el segundo parámetro comience en la posición 30
+    $espacios = " " * ($distancia - $parametro1.Length)
+
+    # Imprimir el primer parámetro en gris
+    Write-Host $parametro1 -NoNewline -ForegroundColor Gray
+
+    # Imprimir los espacios necesarios
+    Write-Host $espacios -NoNewline
+
+    # Imprimir el segundo parámetro en LightRed
+    Write-Host $parametro2 -ForegroundColor Red
+}
+
+function InfoGreen {
+    param(
+        [string]$parametro1,
+        [string]$parametro2
+    )
+
+    # Calcular la cantidad de espacios necesarios para que el segundo parámetro comience en la posición 30
+    $espacios = " " * ($distancia - $parametro1.Length)
+
+    # Imprimir el primer parámetro en gris
+    Write-Host $parametro1 -NoNewline -ForegroundColor Gray
+
+    # Imprimir los espacios necesarios
+    Write-Host $espacios -NoNewline
+
+    # Imprimir el segundo parámetro en green
+    Write-Host $parametro2 -ForegroundColor Green
+}
+function InfoYellow {
+    param(
+        [string]$parametro1,
+        [string]$parametro2
+    )
+
+    # Calcular la cantidad de espacios necesarios para que el segundo parámetro comience en la posición 30
+    $espacios = " " * ($distancia - $parametro1.Length)
+
+    # Imprimir el primer parámetro en gris
+    Write-Host $parametro1 -NoNewline -ForegroundColor Gray
+
+    # Imprimir los espacios necesarios
+    Write-Host $espacios -NoNewline
+
+    # Imprimir el segundo parámetro en yellow
+    Write-Host $parametro2 -ForegroundColor Yellow
+}
+
+# Array con las licencias genéricas
+$genericLicenses = @(
+    "YTMG3-N6DKC-DKB77-7M9GH-8HVX7",
+    "4CPRK-NM3K3-X6XXQ-RXX86-WXCHW",
+    "BT79Q-G7N6G-PGBYW-4YWX6-6F4BT",
+    "N2434-X9D7W-8PF6X-8DV9T-8TYMD",
+    "VK7JG-NPHTM-C97JM-9MPGT-3V66T",
+    "2B87N-8KFHP-DKV6R-Y2C8J-PKCKT",
+    "DXG7C-N36C4-C4HTG-X4T3X-2YV77",
+    "WYPNQ-8C467-V2W6J-TX4WX-WT2RQ",
+    "8PTT6-RNW4C-6V7J2-C2D3X-MHBPB",
+    "GJTYN-HDMQY-FRR76-HVGC7-QPF8P",
+    "YNMGQ-8RYV3-4PGQ3-C8XTP-7CFBY",
+    "84NGF-MHBT6-FXBX8-QWJK7-DRR8H",
+    "XGVPP-NMH47-7TTHJ-W3FW7-8HV2C",
+    "WGGHN-J84D6-QYCPR-T7PJ7-X766F",
+    "FW7NV-4T673-HF4VX-9X4MM-B4H4T",
+    "TX9XD-98N7V-6WMQ6-BX7FG-H8Q99",
+    "3KHY7-WNT83-DGQKR-F7HPR-844BM",
+    "7HNRX-D7KGG-3K4RQ-4WPJ4-YTDFH",
+    "PVMJN-6DFY6-9CCP6-7BKTT-D3WVR",
+    "W269N-WFGWX-YVC9B-4J6C9-T83GX",
+    "MH37W-N47XK-V7XM9-C7227-GCQG9",
+    "NRG8B-VKK3Q-CXVCJ-9G2XF-6Q84J",
+    "9FNHH-K3HBT-3W4TD-6383H-6XYWF",
+    "6TP4R-GNPTD-KYYHQ-7B7DP-J447Y",
+    "YVWGF-BXNMC-HTQYQ-CPQ99-66QFC",
+    "NW6C2-QMPVW-D7KKK-3GKT6-VCFB2",
+    "2WH4N-8QGBV-H22JP-CT43Q-MDWWJ",
+    "NPPR9-FWDCX-D2C8J-H872K-2YT43",
+    "DPH2V-TTNVB-4X9Q3-TJR4H-KHJW4",
+    "YYVX9-NTFWV-6MDM3-9PT4T-4M68B",
+    "44RPN-FTY23-9VTTB-MP9BX-T84FV",
+    "M7XTQ-FN8P6-TTKYV-9D4CC-J462D",
+    "92NFX-8DJQP-P6BBQ-THF9C-7CG2H",
+    "46J3N-RY6B3-BJFDY-VBFT9-V22HG",
+    "PGGM7-N77TC-KVR98-D82KJ-DGPHV",
+    "RHGJR-N7FVY-Q3B8F-KBQ6V-46YP4",
+    "GH37Y-TNG7X-PP2TK-CMRMT-D3WV4",
+    "68WP7-N2JMW-B676K-WR24Q-9D7YC",
+    "37GNV-YCQVD-38XP9-T848R-FC2HD",
+    "33CY4-NPKCC-V98JP-42G8W-VH636",
+    "NF6HC-QH89W-F8WYV-WWXV4-WFG6P",
+    "NH7W7-BMC3R-4W9XT-94B6D-TCQG3",
+    "NTRHT-XTHTG-GBWCG-4MTMP-HH64C",
+    "7B6NC-V3438-TRQG7-8TCCX-H6DDY",
+    "3NF4D-GF9GY-63VKH-QRC3V-7QW8P",
+    "NK96Y-D9CD8-W44CQ-R8YTK-DYJWX",
+    "FWN7H-PF93Q-4GGP8-M8RF3-MDWWW",
+    "WNMTR-4C88C-JK8YV-HQ7T2-76DF9",
+    "2F77B-TNFGY-69QQF-B8YKP-D69TJ",
+    "DCPHK-NFMTC-H88MJ-PFHPY-QJ4BJ",
+    "QFFDN-GRT3P-VKWWX-X7T3R-8B639",
+    "CB7KF-BWN84-R7R2Y-793K2-8XDDG",
+    "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY",
+    "JCKRF-N37P4-C2D82-9YXRT-4M63B",
+    "WMDGN-G9PQG-XVVXX-R3X43-63DFG",
+    "N69G4-B89J2-4G8F4-WWYCC-J464C",
+    "WVDHN-86M7X-466P6-VHXV7-YY726",
+    "46V6N-VCBYR-KT9KT-6Y4YF-QGJYH",
+    "V7C3N-3W6CM-PDKR2-KW8DQ-RJMRD",
+    "7QNT4-HJDDR-T672J-FBFP4-2J8X9",
+    "4NX4X-C98R3-KBR22-MGBWC-D667X",
+    "NH7GX-2BPDT-FDPBD-WD893-RJMQ4",
+    "NTTX3-RV7VB-T7X7F-WQYYY-9Y92"
+)
+
+# Información del disco duro
+function Get-DiskInfo {
+    $disks = Get-WmiObject -Class Win32_DiskDrive
+    $diskInfo = @()
+    foreach ($disk in $disks) {
+        $diskInfo += @{
+            "Model" = $disk.Model
+            "InterfaceType" = $disk.InterfaceType
+            "Size(GB)" = [math]::Round($disk.Size / 1GB, 2)
+            "Partitions" = $disk.Partitions
+        }
+    }
+    return $diskInfo
+}
+
+
+function Get-WindowsProductKeyFromRegistry {
+  $is64Bit = [Environment]::Is64BitOperatingSystem
+  if ($is64Bit) {
+      $view = [Microsoft.Win32.RegistryView]::Registry64
+  } else {
+      $view = [Microsoft.Win32.RegistryView]::Registry32
+  }
+
+  $localKey = [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, $view)
+  $registryKey = $localKey.OpenSubKey("SOFTWARE\Microsoft\Windows NT\CurrentVersion")
+  $registryKeyValue = $registryKey.GetValue("DigitalProductId")
+  $localKey.Close()
+
+  if (-not $registryKeyValue) {
+      Write-Host "Failed to get DigitalProductId from registry"
+      return
+  }
+
+  $digitalProductId = [byte[]]$registryKeyValue
+  $isWin8OrUp = ([Environment]::OSVersion.Version.Major -eq 6 -and [Environment]::OSVersion.Version.Minor -ge 2) -or [Environment]::OSVersion.Version.Major -gt 6
+
+  return (Get-WindowsProductKeyFromDigitalProductId -DigitalProductId $digitalProductId -DigitalProductIdVersion $(if ($isWin8OrUp) { "Windows8AndUp" } else { "UpToWindows7" }))
+}
+
+function Get-WindowsProductKeyFromDigitalProductId {
+  param (
+      [byte[]]$DigitalProductId,
+      [string]$DigitalProductIdVersion
+  )
+
+  if ($DigitalProductIdVersion -eq "Windows8AndUp") {
+      return DecodeProductKeyWin8AndUp -DigitalProductId $DigitalProductId
+  } else {
+      return DecodeProductKey -DigitalProductId $digitalProductId
+  }
+}
+
+function DecodeProductKey {
+  param (
+      [byte[]]$DigitalProductId
+  )
+
+  $keyStartIndex = 52
+  $keyEndIndex = $keyStartIndex + 14
+  $decodeLength = 29
+  $decodeStringLength = 15
+  $decodedChars = @()
+
+  $digits = 'B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'M', 'P', 'Q', 'R', 'T', 'V', 'W', 'X', 'Y', '2', '3', '4', '6', '7', '8', '9'
+
+  for ($i = $keyStartIndex; $i -le $keyEndIndex; $i++) {
+      $decodedChars += $DigitalProductId[$i]
+  }
+
+  for ($i = $decodeLength - 1; $i -ge 0; $i--) {
+      if (($i + 1) % 6 -eq 0) {
+          $decodedChars[$i] = '-'
+      } else {
+          $digitMapIndex = 0
+          for ($j = $decodeStringLength - 1; $j -ge 0; $j--) {
+              $byteValue = ($digitMapIndex -shl 8) -bor $DigitalProductId[$j]
+              $digitMapIndex = $byteValue % 24
+              $DigitalProductId[$j] = [math]::Floor($byteValue / 24)
+              $decodedChars[$i] = $digits[$digitMapIndex]
+          }
+      }
+  }
+
+  return -join $decodedChars
+}
+
+function DecodeProductKeyWin8AndUp {
+  param (
+      [byte[]]$DigitalProductId
+  )
+
+  $key = ""
+  $keyOffset = 52
+  $digits = "BCDFGHJKMPQRTVWXY2346789"
+
+  $isWin8 = ($DigitalProductId[66] -shr 1) -band 1
+  $DigitalProductId[66] = ($DigitalProductId[66] -band 0xf7) -bor ($isWin8 -shl 2)
+
+  for ($i = 24; $i -ge 0; $i--) {
+      $current = 0
+      for ($j = 14; $j -ge 0; $j--) {
+          $current = $current * 256
+          $current = $DigitalProductId[$j + $keyOffset] + $current
+          $DigitalProductId[$j + $keyOffset] = [math]::Floor($current / 24)
+          $current = $current % 24
+      }
+      $key = $digits[$current] + $key
+  }
+
+  $keypart1 = $key.Substring(1, $current)
+  $keypart2 = $key.Substring($current + 1)
+  $key = $keypart1 + "N" + $keypart2
+
+  for ($i = 5; $i -lt $key.Length; $i += 6) {
+      $key = $key.Insert($i, "-")
+  }
+
+  return $key
+}
+$key = Get-WindowsProductKeyFromRegistry
+
+# Obtener los valores del procesador
+$procesador = Get-WmiObject -Class Win32_Processor | Select-Object -Property Name, NumberOfCores, NumberOfLogicalProcessors
+
+# Obtener la cantidad de RAM en GB
+$ramTotal = Get-WmiObject -Class Win32_ComputerSystem | Select-Object -Property TotalPhysicalMemory | % { [math]::round($_.TotalPhysicalMemory / 1GB, 2) }
+
+# Obtener la información de los módulos de RAM
+$ramModulos = Get-WmiObject -Class Win32_PhysicalMemory | Select-Object -Property Capacity, Speed
+
+# Obtener la cantidad de módulos de RAM
+$cantidadModulos = $ramModulos.Count
+
+# Obtener el modelo de la placa base
+$placaBaseModelo = Get-WmiObject -Class Win32_BaseBoard | Select-Object -ExpandProperty Product
+
+# Obtener la información de la tarjeta gráfica
+$tarjetaGrafica = Get-WmiObject -Class Win32_VideoController | Select-Object -Property Name, AdapterRAM
+
+# Llamar a la función principal para obtener y mostrar la clave del producto
+cls
+# Muestra la versión y la edición de Windows por pantalla
+Write-Host "==============================" -ForegroundColor Blue
+Write-Host "=   Información del equipo   =" -ForegroundColor Blue
+Write-Host "==============================" -ForegroundColor Blue
+Write-Host " "
+
+##############################################################################################
+# Mostrar el modelo de la placa base
+InfoYellow "Placa base:            " $placaBaseModelo
+InfoYellow "Versión de la BIOS:" $($bios.SMBIOSBIOSVersion)
+# Obtener y mostrar la versión de TPM
+$tpmVersion = Get-TPMVersion
+InfoYellow "Versión de TPM:         " $tpmVersion
+
+# Obtener y mostrar el estado de Secure Boot
+$secureBootStatus = Get-SecureBootStatus
+InfoYellow "Secure Boot:           " $secureBootStatus
+
+# Obtener y mostrar el modo de arranque
+$bootMode = Get-BootMode
+InfoYellow "Modo de arranque:      " $bootMode
+
+# Obtener y mostrar el estado de BitLocker y su clave de recuperación
+$bitLockerStatus = Get-BitLockerStatus
+InfoYellow "BitLocker:             " $bitLockerStatus.Estado
+if ($bitLockerStatus.Estado -eq "Activado") {
+    InfoYellow "Clave de Recuperación: " $bitLockerStatus."Clave de Recuperación"
+}
+
+##############################################################################################
+Write-Host " "
+
+# Extraer y mostrar los valores del procesador
+foreach ($valor in $procesador) {
+    $modeloProcesador = $valor.Name.Trim()
+    $numeroNucleos = $valor.NumberOfCores
+    $numeroHilos = $valor.NumberOfLogicalProcessors
+
+    InfoYellow "Modelo del procesador: " $modeloProcesador
+    InfoYellow "Número de núcleos:     " $numeroNucleos
+    InfoYellow "Número de hilos:       " $numeroHilos
+}
+Write-Host " "
+
+##############################################################################################
+
+# Mostrar la cantidad de RAM total
+InfoYellow "Cantidad de RAM:       " "$ramTotal GB"
+
+# Mostrar la cantidad de módulos de RAM
+InfoYellow "Número de módulos:     " $cantidadModulos
+
+# Iterar sobre cada módulo de RAM y mostrar la cantidad de RAM y la frecuencia
+$contador = 1
+foreach ($modulo in $ramModulos) {
+    $cantidadRam = [math]::Round($modulo.Capacity / 1GB, 2)  # Convertir la capacidad a GB
+    $frecuencia = $modulo.Speed  # Obtener la frecuencia del módulo en MHz
+	$modulo = "Módulo " + $contador + ": "
+    InfoYellow $modulo "$cantidadRam GB - $frecuencia MHz"
+	$contador++
+}
+Write-Host " "
+
+##############################################################################################
+
+# Mostrar el modelo de la tarjeta gráfica y la cantidad de RAM de video
+foreach ($gpu in $tarjetaGrafica) {
+    $modeloGPU = $gpu.Name
+    $ramVideo = [math]::Round($gpu.AdapterRAM / 1GB, 2)  # Convertir la cantidad de RAM de video a GB
+    InfoYellow "Tarjeta gráfica:" $modeloGPU
+    InfoYellow "Cantidad de RAM:" "$ramVideo GB"
+}
+Write-Host " "
+
+##############################################################################################
+
+# Obtener y mostrar información del disco duro
+$diskInfo = Get-DiskInfo
+foreach ($disk in $diskInfo) {
+    InfoYellow "Modelo de disco:       " $disk["Model"]
+    InfoYellow "Tipo de interfaz:      " $disk["InterfaceType"]
+    InfoYellow "Tamaño del disco:      " "$($disk["Size(GB)"]) GB"
+    InfoYellow "Particiones:           " $disk["Partitions"]
+    Write-Host " "
+}
+
+##############################################################################################
+
+# Obtener y mostrar información del sistema operativo
+$osInfo = Get-OSInfo
+InfoYellow "Sistema operativo:     " $osInfo["Caption"]
+InfoYellow "Versión del SO:        " $osInfo["Version"]
+InfoYellow "Número de compilación: " $osInfo["BuildNumber"]
+InfoYellow "Arquitectura del SO:   " $osInfo["OSArchitecture"]
+
+# Comprobar si la clave de licencia es genérica
+if ($genericLicenses -contains $key) {
+    InfoYellow "Número de licencia:    " $key
+#	if ($activationStatus) {
+#		$description = $activationStatus.Description
+#		$digitalLicense = $activationStatus.ApplicationId -eq "55c92734-d682-4d71-983e-d6ec3f16059f"
+#
+#		if ($digitalLicense) {
+#			InfoYellow "Tipo de activación: " "Windows está activado con una licencia digital."
+#		} else {
+#			InfoYellow "Tipo de activación: " "Windows está activado con una licencia."
+#		}
+#	} else {
+#		InfoLightRed "Tipo de activación: " "Windows no está activado."
+#	}
+	InfoLightRed "Tipo de licencia:      " "Genérica"
+
+	if ($caducidadlicencia -like '*expirar*') {
+		# Definir la expresión regular para capturar la fecha y hora de expiración
+		$patron = "\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}"
+
+		# Buscar todas las coincidencias en la salida del comando
+		$fechaExpiracion = [regex]::Matches($caducidadlicencia, $patron)
+
+		# Imprimir la fecha y hora de expiración
+		foreach ($match in $fechaExpiracion) {
+			InfoLightRed "El producto expira: " $match.Value
+		}
+	} 
+	elseif ($caducidadlicencia -like '*permanente*') {
+		InfoGreen "El producto expira: " "El equipo esta activado de forma permamente."
+	} else {
+		InfoLightRed "El producto expira:" "No se pudo detectar cuando expira el producto."
+	}
+} else {
+    InfoYellow "Número de licencia:    " $key
+    InfoGreen "Tipo de licencia:      " "Original"
+}
+Write-Host " "
+
+##############################################################################################
+
+# Borrar historial
+$historyFilePath = Join-Path $env:USERPROFILE 'AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt'
+if (Test-Path $historyFilePath) {
+    Remove-Item $historyFilePath
+}
