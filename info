@@ -6,6 +6,19 @@ chcp 65001 > $null
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $distancia = 30
 
+function Check-Admin {
+    # Comprobar si el script se está ejecutando como administrador
+    if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        Write-Host "Este script debe ejecutarse con privilegios de administrador." -ForegroundColor Red
+		Write-Host " "
+        Pause
+        Exit
+    }
+}
+
+# Llamar a la función Check-Admin
+Check-Admin
+
 Write-Host "Obteniendo información del sistema..."
 
 $sl = "C:\Windows\System32\slmgr.vbs"
