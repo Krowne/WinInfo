@@ -431,6 +431,7 @@ $placaBaseModelo = Get-WmiObject -Class Win32_BaseBoard | Select-Object -ExpandP
 
 # Obtener la información de la tarjeta gráfica
 $tarjetaGrafica = Get-WmiObject -Class Win32_VideoController | Select-Object -Property Name, AdapterRAM
+$driverVersionGrafica = (Get-WmiObject Win32_Videocontroller | Select-Object -ExpandProperty DriverVersion)
 
 # Llamar a la función principal para obtener y mostrar la clave del producto
 cls
@@ -503,6 +504,7 @@ foreach ($gpu in $tarjetaGrafica) {
     $modeloGPU = $gpu.Name
     $ramVideo = [math]::Round($gpu.AdapterRAM / 1GB, 2)  # Convertir la cantidad de RAM de video a GB
     InfoYellow "Tarjeta gráfica:" $modeloGPU
+	InfoYellow "Versión instala:" $driverVersionGrafica
     InfoYellow "Cantidad de RAM:" "$ramVideo GB"
 }
 Write-Host " "
