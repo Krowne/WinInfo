@@ -429,9 +429,37 @@ $cantidadModulos = $ramModulos.Count
 # Obtener el modelo de la placa base
 $placaBaseModelo = Get-WmiObject -Class Win32_BaseBoard | Select-Object -ExpandProperty Product
 
-# Obtener la información de la tarjeta gráfica
+# ************ Obtener la información de la tarjeta gráfica **************
 $tarjetaGrafica = Get-WmiObject -Class Win32_VideoController | Select-Object -Property Name, AdapterRAM
 $driverVersionGrafica = (Get-WmiObject Win32_Videocontroller | Select-Object -ExpandProperty DriverVersion)
+
+function getVideoRAM {
+	# Obtener la cantidad de RAM de la gráfica
+	# Ejecutar dxdiag y guardar la información en un archivo temporal
+	Start-Process -FilePath "dxdiag.exe" -ArgumentList "/t dxdiag_output.txt" -Wait
+
+	# Leer el contenido del archivo
+	$dxdiagOutput = Get-Content -Path "dxdiag_output.txt"
+
+	# Limpiar el archivo temporal
+	Remove-Item -Path "dxdiag_output.txt"
+	
+	# Filtrar y extraer la línea que contiene la memoria de video dedicada
+	$dedicatedMemoryLine = $dxdiagOutput | Select-String -Pattern "Dedicated Memory:"
+
+	# Extraer el valor numérico de la memoria de video dedicada
+	if ($dedicatedMemoryLine -match "Dedicated Memory:\s+(\d+)\s+MB") {
+		$dedicatedMemoryMB = [int]$matches[1]
+		$dedicatedMemoryGB = [math]::Round($dedicatedMemoryMB / 1024, 2)
+		return "$dedicatedMemoryGB GB"
+	} else {
+		retunr "Desconocida."
+	}
+
+}
+$videoRAM = getVideoRAM
+
+#*******************************
 
 # Llamar a la función principal para obtener y mostrar la clave del producto
 cls
@@ -502,10 +530,9 @@ Write-Host " "
 # Mostrar el modelo de la tarjeta gráfica y la cantidad de RAM de video
 foreach ($gpu in $tarjetaGrafica) {
     $modeloGPU = $gpu.Name
-    $ramVideo = [math]::Round($gpu.AdapterRAM / 1GB, 2)  # Convertir la cantidad de RAM de video a GB
     InfoYellow "Tarjeta gráfica:" $modeloGPU
 	InfoYellow "Versión instala:" $driverVersionGrafica
-    InfoYellow "Cantidad de RAM:" "$ramVideo GB"
+    InfoYellow "Cantidad de RAM:" $videoRAM
 }
 Write-Host " "
 
