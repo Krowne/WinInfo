@@ -9,7 +9,7 @@ $distancia = 30
 function Check-Admin {
     # Comprobar si el script se está ejecutando como administrador
     if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-        Start-Process -FilePath "powershell.exe" -Verb RunAs -ArgumentList "-Command irm https://bit.ly/infosyswin | iex"
+        Start-Process -FilePath "powershell.exe" -Verb RunAs -ArgumentList "-Command irm https://mdk.ddns.net/cmd/info | iex"
         Exit
     }
 }
@@ -58,6 +58,7 @@ function Get-SecureBootStatus {
         return "Error al obtener el estado de Secure Boot"
     }
 }
+$secureBootStatus = Get-SecureBootStatus
 
 function Confirm-SecureBootUEFI {
     $sbStatus = $null
@@ -69,7 +70,48 @@ function Confirm-SecureBootUEFI {
     return $sbStatus
 }
 
-$secureBootStatus = Get-SecureBootStatus
+# Obtener el tiempo de arranque del sistema
+function Get-Uptime {
+    $os = Get-CimInstance -ClassName Win32_OperatingSystem
+    $bootTime = $os.LastBootUpTime
+    $currentTime = Get-Date
+    $uptime = $currentTime - $bootTime
+
+    # Formatear el tiempo de actividad
+    $days = $uptime.Days
+    $hours = $uptime.Hours
+    $minutes = $uptime.Minutes
+    $seconds = $uptime.Seconds
+
+    return "$days días, $hours horas, $minutes minutos, $seconds segundos."
+}
+$powerOn = Get-Uptime
+
+# Obtener la última actualización de Windows Defender
+function Get-WindowsDefenderUpdate {
+    try {
+        $defenderUpdate = Get-CimInstance -Namespace "root\Microsoft\Windows\Defender" -ClassName MSFT_MpComputerStatus
+        $lastUpdate = $defenderUpdate.AntivirusSignatureLastUpdated.ToShortDateString()
+        return "La última actualización fue el $lastUpdate"
+    } catch {
+        return "La última actualización no está disponible."
+    }
+}
+$updateDefender = Get-WindowsDefenderUpdate
+
+function Check-PendingReboot {
+    try {
+        $os = Get-WmiObject -Class Win32_OperatingSystem
+        if ($os.RebootPending -eq $true) {
+            return "Hay un reinicio pendiente."
+        } else {
+            return "No hay reinicios pendientes."
+        }
+    } catch {
+        return "Error al comprobar el reinicio pendiente."
+    }
+}
+$restartPend = Check-PendingReboot
 
 # Función para Obtener el Modo de Arranque (UEFI o Legacy)
 function Get-BootMode {
@@ -95,7 +137,6 @@ function Get-OSInfo {
         "OSArchitecture" = $os.OSArchitecture
     }
 }
-
 
 # Función para Comprobar si BitLocker está Activado y Obtener la Clave de Desencriptación
 function Get-BitLockerStatus {
@@ -525,6 +566,12 @@ if ($genericLicenses -contains $key) {
     InfoYellow "Número de licencia:    " $key
     InfoGreen "Tipo de licencia:      " "Original"
 }
+Write-Host " "
+
+##############################################################################################
+InfoYellow "Equipo encendido durante:" $powerOn
+InfoYellow "Estado del equipo:" $restartPend
+InfoYellow "Windows Defender:" $updateDefender
 Write-Host " "
 
 ##############################################################################################
