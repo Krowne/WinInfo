@@ -4,6 +4,7 @@ chcp 65001 > $null
 
 # Configurar la consola para usar UTF-8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
 $distancia = 30
 
 function Check-Admin {
@@ -607,6 +608,16 @@ Write-Host " "
 InfoYellow "Equipo encendido durante:" $powerOn
 InfoYellow "Estado del equipo:" $restartPend
 InfoYellow "Windows Defender:" $updateDefender
+
+# Obtener el estado del Inicio rápido desde el registro
+$fastStartupStatus = Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Power" -Name HiberbootEnabled
+
+# Mostrar el estado del Inicio rápido
+if ($fastStartupStatus.HiberbootEnabled -eq 1) {
+    InfoYellow "Estado del Inicio rápido:" "Activado."
+} else {
+    InfoYellow "Estado del Inicio rápido:" "Desactivado."
+}
 Write-Host " "
 
 ##############################################################################################
