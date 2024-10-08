@@ -1,0 +1,15 @@
+# Define la URL del archivo en GitHub
+$url = "https://github.com/Krowne/WinInfo/raw/refs/heads/main/master.cmd"
+
+# Define la ruta de destino en System32
+$destination = "$env:SystemRoot\System32\master.cmd"
+
+# Usa Invoke-WebRequest para descargar el archivo
+Invoke-WebRequest -Uri $url -OutFile $destination
+
+# Confirma que el archivo fue guardado
+if (Test-Path $destination) {
+    Write-Host "Archivo descargado y guardado en $destination"
+} else {
+    Write-Host "No se pudo guardar el archivo."
+}
