@@ -117,6 +117,8 @@ cls
     echo                        Advertencia: Esta acci¢n es irreversible.
     echo                        [93mEjemplo: [92mmaster del[37m
     goto :eof
+    echo.
+    echo.
 ) else (
     echo Error: Comando no reconocido.
 )
