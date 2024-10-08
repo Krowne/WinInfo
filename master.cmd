@@ -1,3 +1,44 @@
+@echo off
+setlocal enabledelayedexpansion
+set "pathd=%cd%"
+set "dirs=3D Objects,Contacts,Desktop,Documents,Downloads,Favorites,Links,Music,OneDrive,Pictures,Saved Games,Searches,Videos"
+
+rem Verificar si hay suficientes argumentos
+if "%~1"=="" (
+    echo Error: No se ha especificado un comando.
+    goto :eof
+)
+
+rem Asignar argumentos a variables
+set "command=%~1"
+set "destination=%~2"
+
+rem Comando cp para copiar archivos
+if /i "%command%"=="cp" (
+    if "%destination%"=="" (
+        echo Error: No se ha especificado una ruta de destino.
+        goto :eof
+    )
+
+    rem Verificar si la ruta de destino existe
+    if not exist "%destination%" (
+        echo La ruta de destino no existe. Creando directorios necesarios...
+        mkdir "%destination%"
+        if errorlevel 1 (
+            echo Error al crear el directorio. Aseg£rese de que tiene permisos.
+            goto :eof
+        )
+    )
+
+    rem Copiar todo el contenido al destino con robocopy, ignorando archivos bloqueados y sin seguir v¡nculos
+    echo Copiando archivos y carpetas al destino, ignorando archivos bloqueados y v¡nculos...
+    robocopy . "%destination%" /MIR /R:0 /W:0 /XJ
+    if errorlevel 1 (
+        echo Algunos archivos no se copiaron debido a restricciones, pero la copia ha continuado.
+    ) else (
+        echo Copia completada con ‚xito.
+    )
+
 rem Comando dir para listar archivos y carpetas ocultas
 ) else if /i "%command%"=="dir" (
     echo Listando archivos y carpetas, incluyendo los ocultos:
