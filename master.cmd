@@ -1,7 +1,11 @@
 @echo off
 setlocal enabledelayedexpansion
+
 set "pathd=%cd%"
-set "dirs=3D Objects,Contacts,Desktop,Documents,Downloads,Favorites,Links,Music,OneDrive,Pictures,Saved Games,Searches,Videos"
+set "dirs=3D Objects;Contacts;Desktop;Documents;Downloads;Favorites;Links;Music;OneDrive;Pictures;Saved Games;Searches;Videos"
+
+rem Inicializa el tamaño total
+set "totalSize=0"
 
 rem Verificar si hay suficientes argumentos
 if "%~1"=="" (
@@ -72,37 +76,37 @@ rem Comando cpall para copiar directorios espec¡ficos
         echo Error: No se ha especificado una ruta de destino.
         goto :eof
     )
-
-    rem Lista de directorios a copiar
+if not exist "%destination%" (
+    echo La ruta de destino no existe. Creando directorios necesarios...
+    mkdir "%destination%"
+    if errorlevel 1 (
+        echo Error al crear el directorio. Asegúrese de que tiene permisos.
+        goto :eof
+    )
+)
+echo.
+echo Copiando listado de directorios de usuario:
+rem Copiar cada directorio especificado
+for %%D in ("%dirs:;=" "%") do (
+    echo Copiando:[92m %%~D [37m
+    rem Usar robocopy para copiar el contenido, ignorando vínculos, y redirigir la salida a nul
+    robocopy "%pathd%\%%~D" "%destination%\%%~D" /MIR /R:0 /W:0 /XJ /NFL /NDL /NJH /NJS /NC /NS /NP >nul
     
-    rem Mostrar los directorios que se copiar n
-    echo Directories to copy: %dirs%
-
-    rem Verificar si la ruta de destino existe
-    if not exist "%destination%" (
-        echo La ruta de destino no existe. Creando directorios necesarios...
-        mkdir "%destination%"
-        if errorlevel 1 (
-            echo Error al crear el directorio. Aseg£rese de que tiene permisos.
-            goto :eof
-        )
-    )
-
-    rem Copiar cada directorio especificado
-    for %%D in (%dirs%) do (
-        echo Copiando %%D...
-        rem Usar robocopy para copiar el contenido, ignorando v¡nculos
-        robocopy "%pathd%\%%D" "%destination%\%%D" /MIR /R:0 /W:0 /XJ
-        
-        rem Verificar si la copia fue exitosa
-        if errorlevel 1 (
-            echo Algunos archivos en %%D no se copiaron debido a restricciones.
-        )
-    )
+    rem Verificar si la copia fue exitosa y mostrar el resumen
+    rem if not errorlevel 1 (
+    rem    echo Copia completada para %%D.
+    rem )
+)
 ) else if /i "%command%"=="help" (
 cls
     echo.
     echo [93m   Comandos disponibles:[37m
+    echo.
+    echo [92m   size      [37m        - Muestra el tama¤o del contenido del directorio actual.
+    echo                        [93mEjemplo: [92mmaster size[37m
+    echo.
+    echo [92m   sizeuser  [37m        - Muestra el tama¤o del contenido de los directorios del usuario.
+    echo                        [93mEjemplo: [92mmaster sizeuser[37m
     echo.
     echo [92m   cp destino[37m        - Copia todos los archivos y carpetas del directorio actual a la ruta especificada.
     echo                        [93mEjemplo: [92mmaster cp "D:\Temporal"[37m
@@ -116,9 +120,19 @@ cls
     echo [92m   del[37m               - Borra todo el contenido del directorio actual y el propio directorio.
     echo                        Advertencia: Esta acci¢n es irreversible.
     echo                        [93mEjemplo: [92mmaster del[37m
+	echo.
     goto :eof
-    echo.
-    echo.
+) else if /i "%command%"=="sizeuser" (
+echo.
+	echo Obteniendo el tama¤o total de los directorios del usuario..
+	powershell -Command "$dirs='3D Objects;Contacts;Desktop;Documents;Downloads;Favorites;Links;Music;OneDrive;Pictures;Saved Games;Searches;Videos'; $totalBytes=0; $dirs.Split(';') | ForEach-Object { $size = (Get-ChildItem -Path $_ -Recurse -File -Force -ErrorAction SilentlyContinue | Where-Object { -not ($_.PSIsContainer -or $_.Attributes -match 'ReparsePoint') } | Measure-Object -Property Length -Sum).Sum; if (-not $size) { $size = 0 } ; Write-Host ($_ + ': ') -NoNewline; Write-Host ('{0} bytes' -f $size) -ForegroundColor Green; $totalBytes += $size }; Write-Host ('Tama¤o total de bytes de todos los directorios: ') -NoNewline; Write-Host ('{0} bytes' -f $totalBytes) -ForegroundColor Green"
+) else if /i "%command%"=="size" (
+	cd..
+	echo.
+	echo Obteniendo el tama¤o total de %pathd%..
+	powershell -Command "(Get-ChildItem -Path '%pathd%' -Recurse -File -Force -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -match 'ReparsePoint') } | Measure-Object -Property Length -Sum) | ForEach-Object { Write-Host ('El tama¤o total es: ') -NoNewline; Write-Host ('{0} bytes' -f $_.Sum) -ForegroundColor Green }"
+
+	cd %pathd%
 ) else (
     echo Error: Comando no reconocido.
 )
