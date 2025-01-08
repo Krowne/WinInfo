@@ -102,6 +102,12 @@ cls
     echo.
     echo [93m   Comandos disponibles:[37m
     echo.
+    echo [92m   grant        [37m     - Cambiar los permisos del directorio actual y todos sus directorios y archivos recursivamente a [92mTodos[37m
+    echo                        [93mEjemplo: [92mmaster grant
+    echo.
+    echo [92m   grant destino[37m     - Cambiar los permisos del directorio destino y todos sus directorios y archivos recursivamente a [92mTodos[37m
+    echo                        [93mEjemplo: [92mmaster grant "D:\Temporal"[37m
+    echo.
     echo [92m   size      [37m        - Muestra el tama¤o del contenido del directorio actual.
     echo                        [93mEjemplo: [92mmaster size[37m
     echo.
@@ -133,6 +139,13 @@ echo.
 	powershell -Command "(Get-ChildItem -Path '%pathd%' -Recurse -File -Force -ErrorAction SilentlyContinue | Where-Object { -not ($_.Attributes -match 'ReparsePoint') } | Measure-Object -Property Length -Sum) | ForEach-Object { Write-Host ('El tama¤o total es: ') -NoNewline; Write-Host ('{0} bytes' -f $_.Sum) -ForegroundColor Green }"
 
 	cd %pathd%
+) else if /i "%command%"=="grant" (
+	if exist "%destination%" (
+        echo La ruta es "%destination%"
+		powershell -Command "Write-Host ''; Write-Host 'Cambiando propietario y permisos de %destination%...'; takeown /f %destination% /r /d s >$null 2>&1; icacls %destination% /setowner 'Todos' /t /q /c >$null 2>&1; icacls %destination% /grant 'Todos:(F)' /t /q /c /inheritance:e >$null 2>&1"
+    ) else (
+	    powershell -Command "cd ..; Write-Host ''; Write-Host 'Cambiando propietario y permisos de %pathd%...'; takeown /f %pathd% /r /d s >$null 2>&1; icacls %pathd% /setowner 'Todos' /t /q /c >$null 2>&1; icacls %pathd% /grant 'Todos:(F)' /t /q /c /inheritance:e >$null 2>&1; cd %pathd%"
+	)
 ) else (
     echo Error: Comando no reconocido.
 )
