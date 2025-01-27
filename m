@@ -479,7 +479,7 @@ function SelectedTheButtons {
 }
 
 $fondo = '#aeb2cd'
-$Window = Create-CustomWindow -Width 600 -Height 570 -Fondo $fondo -Title 'SPR Informática - Menú de configuración del Sistema' -iconUrl 'https://mdk.ddns.net/ps/icon.ico'
+$Window = Create-CustomWindow -Width 600 -Height 570 -Fondo $fondo -Title 'SPR Informática - Menú de configuración del Sistema' -iconUrl 'https://github.com/Krowne/WinInfo/raw/refs/heads/main/icons/icon.ico'
 $Window.Add_Paint({
     $graphics = $_.Graphics
     $fondo = '#c4c7dd'
@@ -579,7 +579,7 @@ $apps0.add_Click({
     Clear-Host
     $Window.Hide()
     $fondo = '#aeb2cd'
-    $AppsWindow = Create-CustomWindow -Width 600 -Height 350 -Fondo $fondo -Title 'SPR Informática - Instalar Aplicaciones' -iconUrl 'https://mdk.ddns.net/ps/icon.ico'
+    $AppsWindow = Create-CustomWindow -Width 600 -Height 350 -Fondo $fondo -Title 'SPR Informática - Instalar Aplicaciones' -iconUrl 'https://github.com/Krowne/WinInfo/raw/refs/heads/main/icons/icon.ico'
     $AppsWindow.Add_Paint({
         $graphics = $_.Graphics
         $fondo = '#c4c7dd'
@@ -739,7 +739,7 @@ $device1 = Create-CombinedImage -Window $Window -top 465 -left 295 -ancho 250 -f
 
 $device0.add_Click({ 
     Clear-Host
-    $Win2 = Create-CustomWindow -Width 320 -Height 100 -Fondo '#aeb2cd' -Title '¿Reinciar el equipo?' -iconUrl 'https://mdk.ddns.net/ps/restart.ico'
+    $Win2 = Create-CustomWindow -Width 320 -Height 100 -Fondo '#aeb2cd' -Title '¿Reinciar el equipo?' -iconUrl 'https://github.com/Krowne/WinInfo/raw/refs/heads/main/icons/restart.ico'
     $confirmNO = Create-CombinedImage -Window $Win2 -top 15 -left 80 -ancho 100 -filter '#e0e0e0' -Sfilter '#bbbbbb' -text 'Cancelar' 
     $confirmYES = Create-CombinedImage -Window $Win2 -top 15 -left 190 -ancho 100 -filter '#fab7b9' -Sfilter '#c14e51' -text 'Confirmar'
     $confirmNO.add_Click({ 
@@ -759,7 +759,7 @@ $device0.add_Click({
 $device1.add_Click({ 
     # Verificar si el script se está ejecutando como administrador
     Clear-Host
-    $Win2 = Create-CustomWindow -Width 320 -Height 100 -Fondo '#aeb2cd' -Title '¿Apagar el equipo?' -iconUrl 'https://mdk.ddns.net/ps/turnoff.ico'
+    $Win2 = Create-CustomWindow -Width 320 -Height 100 -Fondo '#aeb2cd' -Title '¿Apagar el equipo?' -iconUrl 'https://github.com/Krowne/WinInfo/blob/main/icons/turnoff.ico'
     $confirmNO = Create-CombinedImage -Window $Win2 -top 15 -left 80 -ancho 100 -filter '#e0e0e0' -Sfilter '#bbbbbb' -text 'Cancelar' 
     $confirmYES = Create-CombinedImage -Window $Win2 -top 15 -left 190 -ancho 100 -filter '#fab7b9' -Sfilter '#c14e51' -text 'Confirmar'
     $confirmNO.add_Click({ 
