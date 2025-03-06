@@ -615,9 +615,9 @@ $apps0.add_Click({
     $AppsI05 = Create-CombinedImage -Window $AppsWindow -top 145 -left 386 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text 'VLC Player' -value 'VideoLAN.VLC' -saved $true
     $AppsI05 = set-Hand -p $AppsI05
     $AppsI06 = Create-CombinedImage -Window $AppsWindow -top 185 -left 30 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text 'WinRAR' -value 'RARLab.WinRAR' -saved $true
-    #$AppsI06 = set-Hand -p $AppsI06
+    $AppsI06 = set-Hand -p $AppsI06
     #$AppsI07 = Create-CombinedImage -Window $AppsWindow -top 185 -left 208 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text '' -value '' -saved $true
-    $AppsI07 = set-Hand -p $AppsI07
+    #$AppsI07 = set-Hand -p $AppsI07
     # Verde  #c9e8cb #71bd76
 	# Rojo #fab7b9 #c14e51
     $fondo0 = '#fab7b9'; $fondoHvr0 = '#c14e51'
@@ -638,7 +638,7 @@ $apps0.add_Click({
     $AppsI04.add_Click({ param($sender, $eventArgs); SelectedTheButtons -sender $this -eventArgs $eventArgs })
     $AppsI05.add_Click({ param($sender, $eventArgs); SelectedTheButtons -sender $this -eventArgs $eventArgs })
     $AppsI06.add_Click({ param($sender, $eventArgs); SelectedTheButtons -sender $this -eventArgs $eventArgs })
-    $AppsI07.add_Click({ param($sender, $eventArgs); SelectedTheButtons -sender $this -eventArgs $eventArgs })
+    #$AppsI07.add_Click({ param($sender, $eventArgs); SelectedTheButtons -sender $this -eventArgs $eventArgs })
 
     $InstallApps0.add_Click({
         param($sender, $eventArgs)
