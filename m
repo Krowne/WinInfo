@@ -602,19 +602,21 @@ $apps0.add_Click({
     $fondoHvr = '#5863bf'
     $AppsI00 = Create-CombinedImage -Window $AppsWindow -top 105 -left 30 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text 'Adobe Acrobat Reader' -value 'Adobe.Acrobat.Reader.64-bit' -saved $true
     $AppsI00 = set-Hand -p $AppsI00
-    $AppsI01 = Create-CombinedImage -Window $AppsWindow -top 105 -left 208 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text 'AnyDesk' -value 'AnyDeskSoftwareGmbH.AnyDesk' -saved $true
+    #$AppsI01 = Create-CombinedImage -Window $AppsWindow -top 105 -left 208 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text 'AnyDesk' -value 'AnyDeskSoftwareGmbH.AnyDesk' -saved $true
+    #$AppsI01 = set-Hand -p $AppsI01
+    $AppsI01 = Create-CombinedImage -Window $AppsWindow -top 105 -left 208 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text 'Google Chrome' -value 'Google.Chrome' -saved $true
     $AppsI01 = set-Hand -p $AppsI01
-    $AppsI02 = Create-CombinedImage -Window $AppsWindow -top 105 -left 386 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text 'Google Chrome' -value 'Google.Chrome' -saved $true
+    $AppsI02 = Create-CombinedImage -Window $AppsWindow -top 105 -left 386 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text 'Libre Office' -value 'TheDocumentFoundation.LibreOffice' -saved $true
     $AppsI02 = set-Hand -p $AppsI02
-    $AppsI03 = Create-CombinedImage -Window $AppsWindow -top 145 -left 30 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text 'Libre Office' -value 'TheDocumentFoundation.LibreOffice' -saved $true
+    $AppsI03 = Create-CombinedImage -Window $AppsWindow -top 145 -left 30 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text 'Notepad++' -value 'Notepad++.Notepad++' -saved $true
     $AppsI03 = set-Hand -p $AppsI03
-    $AppsI04 = Create-CombinedImage -Window $AppsWindow -top 145 -left 208 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text 'Notepad++' -value 'Notepad++.Notepad++' -saved $true
+    $AppsI04 = Create-CombinedImage -Window $AppsWindow -top 145 -left 208 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text 'TeamViewer' -value 'TeamViewer.TeamViewer.Host' -saved $true
     $AppsI04 = set-Hand -p $AppsI04
-    $AppsI05 = Create-CombinedImage -Window $AppsWindow -top 145 -left 386 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text 'TeamViewer' -value 'TeamViewer.TeamViewer.Host' -saved $true
+    $AppsI05 = Create-CombinedImage -Window $AppsWindow -top 145 -left 386 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text 'VLC Player' -value 'VideoLAN.VLC' -saved $true
     $AppsI05 = set-Hand -p $AppsI05
-    $AppsI06 = Create-CombinedImage -Window $AppsWindow -top 185 -left 30 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text 'VLC Player' -value 'VideoLAN.VLC' -saved $true
-    $AppsI06 = set-Hand -p $AppsI06
-    $AppsI07 = Create-CombinedImage -Window $AppsWindow -top 185 -left 208 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text 'WinRAR' -value 'RARLab.WinRAR' -saved $true
+    $AppsI06 = Create-CombinedImage -Window $AppsWindow -top 185 -left 30 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text 'WinRAR' -value 'RARLab.WinRAR' -saved $true
+    #$AppsI06 = set-Hand -p $AppsI06
+    #$AppsI07 = Create-CombinedImage -Window $AppsWindow -top 185 -left 208 -ancho 163 -filter $fondo -Sfilter $fondoHvr -text '' -value '' -saved $true
     $AppsI07 = set-Hand -p $AppsI07
     # Verde  #c9e8cb #71bd76
 	# Rojo #fab7b9 #c14e51
