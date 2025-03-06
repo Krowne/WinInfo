@@ -509,7 +509,7 @@ $sys9 = Create-CombinedImage -Window $Window -top 190 -left 295 -ancho 250 -filt
 $sys10 = Create-CombinedImage -Window $Window -top 230 -left 30 -ancho 250 -filter $fondo -Sfilter $fondoHvr -text 'Propiedades del Sistema' 
 $sys11 = Create-CombinedImage -Window $Window -top 230 -left 295 -ancho 250 -filter $fondo -Sfilter $fondoHvr -text 'Información del sistema'
 
-$sys0.add_Click({ irm https://sprinformatica.ddns.net/online-x/get-licence | iex })
+$sys0.add_Click({ irm https://github.com/Krowne/WinInfo/raw/refs/heads/main/get-licence | iex })
 $sys1.add_Click({ slui 3 })
 $sys2.add_Click({ Start-Process "ms-settings:" })
 $sys3.add_Click({ control })
