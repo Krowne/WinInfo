@@ -1,4 +1,4 @@
 $host.UI.RawUI.WindowTitle = "Menú de Configuración del Sistema"
-$urlgit = 'https://raw.githubusercontent.com/Krowne/PSInfo/refs/heads/main/m'
+$urlgit = 'https://raw.githubusercontent.com/Krowne/PSInfo/refs/heads/main/m.kwn'
 Write-Host "Cargando configuración.."
 Invoke-RestMethod $urlgit | Invoke-Expression
