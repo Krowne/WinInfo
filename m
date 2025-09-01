@@ -1,3 +1,4 @@
+CLS
 $host.UI.RawUI.WindowTitle = "Menú de Configuración del Sistema"
 Write-Host "Cargando configuración.."
 $IsAdmin = ([Security.Principal.WindowsPrincipal] `
