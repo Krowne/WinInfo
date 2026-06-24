@@ -31,7 +31,7 @@ if /i "%~1"=="reiniciar" (
 :: Comando para cargar la línea de PowerShell (no necesita privilegios de administrador)
 if /i "%~1"=="cargar" (
 	cls
-    powershell -command "irm https://bit.ly/pre-m | iex"
+    powershell -command "irm https://bit.ly/syspanel -Headers @{\"Cache-Control\"=\"no-cache\"} | iex"
     exit /b
 )
 
